@@ -29,11 +29,13 @@ async def process_algorithm(message: Message):
             group_type=data["group_type"],
         )
         result = DB_MONGO.get_data_using_algorithm(
+            dt_upto=data["dt_upto"],
             group_type=data["group_type"],
             dates=dates,
         )
         await message.answer(
-            text=f"{repr(result)}"
+            text='{' + f'"dataset": [' + ', '.join(map(str, result.get('dataset'))) + '], '
+                 '"labels": [' + ', '.join(map(lambda x: '"' + x + '"', result.get('labels'))) + ']}'
         )
     except (Exception, TelegramAPIError):
         await message.answer(

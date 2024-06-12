@@ -20,6 +20,13 @@ def algorithm(
 
     total_needed_time = (dt_upto - dt_from).total_seconds()
 
+    if group_type == "day" and (dt_upto.hour == 0 and dt_upto.minute == 0):
+        # обработка случая, если dt_upto равна <дата>T00:00:00, чтобы не проверять следующий день
+        total_needed_time += seconds_in_day
+    if group_type == "hour" and (dt_upto.hour == 0 and dt_upto.minute == 0):
+        # обработка случая, если dt_upto равна <дата>T00:00:00, чтобы не проверять следующий час
+        total_needed_time += seconds_in_hour
+
     while total_needed_time > 0:
         dates.append(dt_from)
 
@@ -29,20 +36,24 @@ def algorithm(
             if total_needed_time - seconds_in_hour == 0:
                 total_needed_time -= seconds_in_hour
                 dates.append(dt_from)
-
-                dt_from += timedelta(hours=1)
-                dates.append(dt_from)
             else:
+                if total_needed_time - seconds_in_hour < 0:
+                    total_needed_time -= total_needed_time
+                    dates.append(dt_from)
                 total_needed_time -= seconds_in_hour
 
         if group_type == "day":
             dt_from += timedelta(days=1)
 
-            if total_needed_time - seconds_in_day < 0:
-                total_needed_time -= total_needed_time
+            if total_needed_time - seconds_in_day == 0:
+                total_needed_time -= seconds_in_day
                 dates.append(dt_from)
             else:
-                total_needed_time -= seconds_in_day
+                if total_needed_time - seconds_in_day < 0:
+                    total_needed_time -= total_needed_time
+                    dates.append(dt_from)
+                else:
+                    total_needed_time -= seconds_in_day
 
         if group_type == "month":
             dt_from += timedelta(days=months[dt_from.month])
